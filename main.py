@@ -18,10 +18,28 @@ class BytePairEncoding:
                 counts[pair] += 1
         return dict(counts)
 
-    def train():
-        pass
+    def merge_chunk(self, id_chunk, pair, new_id):
+        out = []
+        i = 0
+        while i < len(id_chunk):
+            if i < len(id_chunk) - 1 and (id_chunk[i], id_chunk[i + 1]) == pair:
+                out.append(new_id)
+                i += 2
+            else:
+                out.append(id_chunk[i])
+                i += 1
+        return out
 
-    def merge():
+    def merge(self, chunked_corpus, pair, new_id):
+        merged_corpus_chunks = []
+        for chunk in chunked_corpus:
+            merged_chunk = self.merge_chunk(chunk, pair, new_id)
+            print(f"Merging chunk: {chunk} with pair: {pair} to new_id: {new_id} => {merged_chunk}")
+            merged_corpus_chunks.append(merged_chunk)
+
+        return merged_corpus_chunks
+
+    def train():
         pass
 
     def encode():
@@ -33,5 +51,10 @@ class BytePairEncoding:
 
 bpe = BytePairEncoding()
 
-stats = bpe.get_stats([[1,1,1], [2,4,4]])
-print(stats)
+corpus = [[1,1,1], [2,4,4]]
+print(f"Corpus: {corpus}")
+stats = bpe.get_stats(corpus)
+print(f"Stats: {stats}")
+merged = bpe.merge(corpus, (1,1), 5)
+print(f"Merge: {merged}")
+
