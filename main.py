@@ -3,6 +3,7 @@ from collections import defaultdict
 class BytePairEncoding:
     def __init__(self):
         self.merges = {}
+        self.vocab = {}
         pass
 
     def load_tokenizer():
@@ -41,6 +42,11 @@ class BytePairEncoding:
         
     def prepare_chunks(self, text_corpus):
         return [list(text_corpus.encode("utf-8"))]
+
+    def _build_vocab(self):
+        self.vocab = {i: bytes([i]) for i in range(256)}
+        for pair, id in self.merges.items():
+            self.vocab[id] = self.vocab[pair[0]] + self.vocab[pair[1]]
         
     def train(self, text_corpus, num_merges):
         chunks = self.prepare_chunks(text_corpus)
@@ -52,6 +58,7 @@ class BytePairEncoding:
             new_id = 256 + i
             chunks = self.merge(chunks, pair, new_id)
             self.merges[pair] = new_id
+            self._build_vocab()
 
         return chunks
 
@@ -80,7 +87,6 @@ class BytePairEncoding:
                     pair_id = learned_pair_id
                     
             chunks = self.merge(chunks, pair, pair_id)
-            
         return chunks
 
     def decode():
@@ -97,5 +103,7 @@ print(f"Merges: {bpe.merges}")
 print(f"Final corpus after training: {corpus}")
 encoded = bpe.encode("aagaa")
 print(f"Encoded: {encoded}")
+
+print(f"Vocabulary: {bpe.vocab}")
 
 
