@@ -2,6 +2,7 @@ from collections import defaultdict
 
 class BytePairEncoding:
     def __init__(self):
+        self.merges = defaultdict(int)
         pass
 
     def load_tokenizer():
@@ -10,10 +11,10 @@ class BytePairEncoding:
     def save_tokenizer():
         pass
 
-    def get_stats(self, chunks) -> dict:
+    def get_stats(self, chunked_corpus) -> dict:
         counts = defaultdict(int)
 
-        for chunk in chunks:
+        for chunk in chunked_corpus:
             for pair in zip(chunk, chunk[1:]):
                 counts[pair] += 1
         return dict(counts)
@@ -39,8 +40,19 @@ class BytePairEncoding:
 
         return merged_corpus_chunks
 
-    def train():
-        pass
+    def train(self, corpus, num_merges):
+        chunks = corpus
+        for i in range(num_merges):
+            stats = self.get_stats(chunks)
+            if not stats:
+                break
+            pair = max(stats, key=stats.get)
+            new_id = 256 + i
+            new_corpus_chunk = self.merge(chunks, pair, new_id)
+            chunks = new_corpus_chunk
+            self.merges[pair] = new_id
+
+        return chunks
 
     def encode():
         pass
@@ -52,9 +64,11 @@ class BytePairEncoding:
 bpe = BytePairEncoding()
 
 corpus = [[1,1,1], [2,4,4]]
-print(f"Corpus: {corpus}")
-stats = bpe.get_stats(corpus)
-print(f"Stats: {stats}")
-merged = bpe.merge(corpus, (1,1), 5)
-print(f"Merge: {merged}")
+
+
+print(f"Corpus before training: {corpus}")
+corpus = bpe.train(corpus, 5)
+print(f"Merges: {bpe.merges}")
+print(f"Final corpus after training: {corpus}")
+
 
