@@ -89,8 +89,12 @@ class BytePairEncoding:
             chunks = self.merge(chunks, pair, pair_id)
         return chunks
 
-    def decode():
-        pass
+    def decode(self, encoded_bytes):
+        decoded_bytes = []
+        for bytes in encoded_bytes:
+            decoded_bytes.append(self.vocab[bytes])
+        return b''.join(decoded_bytes).decode("utf-8")
+        
 
 
 bpe = BytePairEncoding()
@@ -104,6 +108,9 @@ print(f"Final corpus after training: {corpus}")
 encoded = bpe.encode("aagaa")
 print(f"Encoded: {encoded}")
 
-print(f"Vocabulary: {bpe.vocab}")
+# print(f"Vocabulary: {bpe.vocab}")
+# 
+decoded = bpe.decode(encoded[0])
+print(f"Decoded: {decoded}")
 
 
