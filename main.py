@@ -2,7 +2,7 @@ from collections import defaultdict
 
 class BytePairEncoding:
     def __init__(self):
-        self.merges = defaultdict(int)
+        self.merges = {}
         pass
 
     def load_tokenizer():
@@ -35,13 +35,15 @@ class BytePairEncoding:
         merged_corpus_chunks = []
         for chunk in chunked_corpus:
             merged_chunk = self.merge_chunk(chunk, pair, new_id)
-            print(f"Merging chunk: {chunk} with pair: {pair} to new_id: {new_id} => {merged_chunk}")
             merged_corpus_chunks.append(merged_chunk)
 
         return merged_corpus_chunks
-
-    def train(self, corpus, num_merges):
-        chunks = corpus
+        
+    def prepare_chunks(self, text_corpus):
+        return [list(text_corpus.encode("utf-8"))]
+        
+    def train(self, text_corpus, num_merges):
+        chunks = self.prepare_chunks(text_corpus)
         for i in range(num_merges):
             stats = self.get_stats(chunks)
             if not stats:
@@ -54,8 +56,19 @@ class BytePairEncoding:
 
         return chunks
 
-    def encode():
-        pass
+    def encode(self, text, num_merges):
+        chunks = self.prepare_chunks(text)
+        for i in range(num_merges):
+            stats = self.get_stats(chunks)
+            if not stats:
+                break
+            pair = max(stats, key=stats.get)
+            id = self.merges.get(pair)
+            if id is None:
+                break
+            new_corpus_chunk = self.merge(chunks, pair, id)
+            chunks = new_corpus_chunk
+        return chunks
 
     def decode():
         pass
@@ -63,12 +76,13 @@ class BytePairEncoding:
 
 bpe = BytePairEncoding()
 
-corpus = [[1,1,1], [2,4,4]]
+corpus = "aabtaaz"
 
 
-print(f"Corpus before training: {corpus}")
 corpus = bpe.train(corpus, 5)
 print(f"Merges: {bpe.merges}")
 print(f"Final corpus after training: {corpus}")
+encoded = bpe.encode("aagaa", 5)
+print(f"Encoded: {encoded}")
 
 
