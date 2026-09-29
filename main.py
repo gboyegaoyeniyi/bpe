@@ -1,9 +1,11 @@
 from collections import defaultdict
+import regex as re
 
 class BytePairEncoding:
     def __init__(self):
         self.merges = {}
         self.vocab = {}
+        self.pattern = r"""'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+"""
         pass
 
     def load_tokenizer():
@@ -41,7 +43,8 @@ class BytePairEncoding:
         return merged_corpus_chunks
         
     def prepare_chunks(self, text_corpus):
-        return [list(text_corpus.encode("utf-8"))]
+        chunks = re.findall(self.pattern, text_corpus)
+        return [list(chunk.encode("utf-8")) for chunk in chunks]
 
     def _build_vocab(self):
         self.vocab = {i: bytes([i]) for i in range(256)}
