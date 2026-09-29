@@ -50,24 +50,37 @@ class BytePairEncoding:
                 break
             pair = max(stats, key=stats.get)
             new_id = 256 + i
-            new_corpus_chunk = self.merge(chunks, pair, new_id)
-            chunks = new_corpus_chunk
+            chunks = self.merge(chunks, pair, new_id)
             self.merges[pair] = new_id
 
         return chunks
 
-    def encode(self, text, num_merges):
+    def encode(self, text):
         chunks = self.prepare_chunks(text)
-        for i in range(num_merges):
+        while True:
             stats = self.get_stats(chunks)
             if not stats:
                 break
-            pair = max(stats, key=stats.get)
-            id = self.merges.get(pair)
-            if id is None:
+
+            learned_pairs = {}
+
+            for pair in stats:
+                if pair in self.merges:
+                    learned_pairs[pair] = self.merges[pair]
+
+            if not learned_pairs:
                 break
-            new_corpus_chunk = self.merge(chunks, pair, id)
-            chunks = new_corpus_chunk
+
+            pair = None
+            pair_id = float("inf")
+
+            for learned_pair, learned_pair_id in learned_pairs.items():
+                if learned_pair_id < pair_id:
+                    pair = learned_pair
+                    pair_id = learned_pair_id
+                    
+            chunks = self.merge(chunks, pair, pair_id)
+            
         return chunks
 
     def decode():
@@ -82,7 +95,7 @@ corpus = "aabtaaz"
 corpus = bpe.train(corpus, 5)
 print(f"Merges: {bpe.merges}")
 print(f"Final corpus after training: {corpus}")
-encoded = bpe.encode("aagaa", 5)
+encoded = bpe.encode("aagaa")
 print(f"Encoded: {encoded}")
 
 
