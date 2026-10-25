@@ -132,11 +132,11 @@ class BytePairEncoding:
 
 bpe = BytePairEncoding()
 
-corpus = "aabtaaz is a nation, but am from Nigeria!"
+corpus = "The grand Ibadan band played at the abundant Abuja banana stand."
 bpe.train(text_corpus=corpus, num_merges=100, save_tokenizer=True, tokenizer_save_path="tokenizer.json")
 bpe2 = BytePairEncoding()
 bpe2.load_tokenizer("tokenizer.json")
-encoded = bpe2.encode("am from Nigeria not aabtaaz 😀")
+encoded = bpe2.encode("A grand band stands in Abuja 🇳🇬")
 print(f"Encoded: {encoded}")
 decoded = bpe2.decode(encoded)
 print(f"Decoded: {decoded}")
