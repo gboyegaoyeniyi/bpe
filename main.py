@@ -1,6 +1,8 @@
-from collections import defaultdict
-import regex as re
 import json
+from collections import defaultdict
+
+import regex as re
+
 
 class BytePairEncoding:
     def __init__(self, tokenizer_path=None):
@@ -10,21 +12,33 @@ class BytePairEncoding:
         self.pattern = r"""'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+"""
 
     def load_tokenizer(self, path=None):
+        """
+        Loads a saved tokenizer from a previously trained procedure
+
+        Args:
+            path: The path of the tokenier.json if no path is provided uses the path in the BPE class initialization
+        """
         if path is None:
             if self.tokenizer_path is None:
-                raise ValueError("Tokenizer path is not set. Please provide a path to load the tokenizer.")
+                raise ValueError(
+                    "Tokenizer path is not set. Please provide a path to load the tokenizer."
+                )
             path = self.tokenizer_path
         with open(path, "r") as f:
             data = json.load(f)
             self.pattern = data["pattern"]
-            self.merges = {tuple(pair): i + 256  for i, pair in enumerate(data["merges"])}
+            self.merges = {
+                tuple(pair): i + 256 for i, pair in enumerate(data["merges"])
+            }
 
         self._build_vocab()
 
     def save_tokenizer(self, path=None):
         if path is None:
             if self.tokenizer_path is None:
-                raise ValueError("Tokenizer path is not set. Please provide a path to save the tokenizer.")
+                raise ValueError(
+                    "Tokenizer path is not set. Please provide a path to save the tokenizer."
+                )
             path = self.tokenizer_path
 
         data = {
@@ -32,11 +46,12 @@ class BytePairEncoding:
             "pattern": self.pattern,
             "merges": [list(pair) for pair in self.merges.keys()],
         }
-        
+
         with open(path, "w") as f:
             json.dump(data, f, indent=2)
 
     def get_stats(self, chunked_corpus) -> dict:
+        # Counts or get the statistics of number or occurence of pairs
         counts = defaultdict(int)
 
         for chunk in chunked_corpus:
@@ -63,22 +78,41 @@ class BytePairEncoding:
             merged_corpus_chunks.append(merged_chunk)
 
         return merged_corpus_chunks
-        
+
     def prepare_chunks(self, text_corpus):
+        # Use the regex pattern to split and chunk the text corpus based on the standard. Copied regex online.
+        # Regex mostly needed to handle space character matching
         chunks = re.findall(self.pattern, text_corpus)
         return [list(chunk.encode("utf-8")) for chunk in chunks]
 
     def _build_vocab(self):
+        # Build the vocabulary look up table
+        # ID -> Pair
+        # Used to reconstruct tokens back to original texts
         self.vocab = {i: bytes([i]) for i in range(256)}
         for pair, id in self.merges.items():
             self.vocab[id] = self.vocab[pair[0]] + self.vocab[pair[1]]
-        
-    def train(self, text_corpus, num_merges, save_tokenizer=False, tokenizer_save_path=None):
+
+    def train(
+        self, text_corpus, num_merges, save_tokenizer=False, tokenizer_save_path=None
+    ):
+        """
+        Train the BPE tokenizer from scratch.
+
+        Args:
+            text_corpus (str): The training text.
+            num_merges (int): The desired number of merges to iterate.
+            save_tokenizer: save tokenizer after training or not.
+            tokenizer_save_path: Path to wicth the tokenizer should be saved, defaults to None uses BPE class initialization path
+        """
+
         chunks = self.prepare_chunks(text_corpus)
         for i in range(num_merges):
             stats = self.get_stats(chunks)
             if not stats:
                 break
+            # Select the most occuring pairs and proceed to merge
+            # Generates new pair id -> Token ID
             pair = max(stats, key=stats.get)
             new_id = 256 + i
             chunks = self.merge(chunks, pair, new_id)
@@ -114,7 +148,7 @@ class BytePairEncoding:
                 if learned_pair_id < pair_id:
                     pair = learned_pair
                     pair_id = learned_pair_id
-                    
+
             chunks = self.merge(chunks, pair, pair_id)
 
         chunk = []
@@ -126,19 +160,21 @@ class BytePairEncoding:
         decoded_bytes = []
         for token_id in encoded_bytes:
             decoded_bytes.append(self.vocab[token_id])
-        return b''.join(decoded_bytes).decode("utf-8")
-        
+        return b"".join(decoded_bytes).decode("utf-8")
 
 
 bpe = BytePairEncoding()
 
 corpus = "The grand Ibadan band played at the abundant Abuja banana stand."
-bpe.train(text_corpus=corpus, num_merges=100, save_tokenizer=True, tokenizer_save_path="tokenizer.json")
+bpe.train(
+    text_corpus=corpus,
+    num_merges=100,
+    save_tokenizer=True,
+    tokenizer_save_path="tokenizer.json",
+)
 bpe2 = BytePairEncoding()
 bpe2.load_tokenizer("tokenizer.json")
 encoded = bpe2.encode("A grand band stands in Abuja 🇳🇬")
 print(f"Encoded: {encoded}")
 decoded = bpe2.decode(encoded)
 print(f"Decoded: {decoded}")
-
-
