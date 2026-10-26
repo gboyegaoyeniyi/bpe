@@ -78,6 +78,33 @@ print(tokens)
 - At this point the token `257` represent the word `the` - awesome
 - And thats kind of everything about BPE
 - **Find the full BPE implementation at [main.py](main.py)**
+- To run the code;
+- First install regex
+```bash
+pip install regex
+```
+
+- The main test code is;
+    
+```python
+    bpe = BytePairEncoding()
+    
+    corpus = "The grand Ibadan band played at the abundant Abuja banana stand."
+    bpe.train(
+        text_corpus=corpus,
+        num_merges=100,
+        save_tokenizer=True,
+        tokenizer_save_path="tokenizer.json",
+    )
+    bpe2 = BytePairEncoding()
+    bpe2.load_tokenizer("tokenizer.json")
+    encoded = bpe2.encode("A grand band stands in Abuja 🇳🇬")
+    print(f"Encoded: {encoded}")
+    decoded = bpe2.decode(encoded)
+    print(f"Decoded: {decoded}")
+```
+
+- Make sure to check the tokenizer.json to see what was generated during merges
 
 
 ### After Everything

@@ -163,18 +163,19 @@ class BytePairEncoding:
         return b"".join(decoded_bytes).decode("utf-8")
 
 
-bpe = BytePairEncoding()
-
-corpus = "The grand Ibadan band played at the abundant Abuja banana stand."
-bpe.train(
-    text_corpus=corpus,
-    num_merges=100,
-    save_tokenizer=True,
-    tokenizer_save_path="tokenizer.json",
-)
-bpe2 = BytePairEncoding()
-bpe2.load_tokenizer("tokenizer.json")
-encoded = bpe2.encode("A grand band stands in Abuja 🇳🇬")
-print(f"Encoded: {encoded}")
-decoded = bpe2.decode(encoded)
-print(f"Decoded: {decoded}")
+if __name__ == "__main__":
+    bpe = BytePairEncoding()
+    
+    corpus = "The grand Ibadan band played at the abundant Abuja banana stand."
+    bpe.train(
+        text_corpus=corpus,
+        num_merges=100,
+        save_tokenizer=True,
+        tokenizer_save_path="tokenizer.json",
+    )
+    bpe2 = BytePairEncoding()
+    bpe2.load_tokenizer("tokenizer.json")
+    encoded = bpe2.encode("A grand band stands in Abuja 🇳🇬")
+    print(f"Encoded: {encoded}")
+    decoded = bpe2.decode(encoded)
+    print(f"Decoded: {decoded}")
